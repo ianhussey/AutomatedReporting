@@ -1,0 +1,6 @@
+A mixed within-between ANOVA was conducted with the outcome variable as DV, condition as the between subjects IV, and time point as the within subjects IV. No main effect was found for condition, F(1, 98) = 0, p = 0.99496, ηg2 = 0. No main effect was found for time point, F(1, 98) = 0, p = 0.98558, ηg2 = 0. A significant condition*time point interaction effect was found, F(1, 98) = 9.43, p = 0.00276, ηg2 = 0.04. 
+
+condition A timepoint 1: n = 52, M = -0.13, SD = 0.26
+condition B timepoint 1: n = 48, M = -0.02, SD = 0.32
+condition A timepoint 2: n = 52, M = -0.02, SD = 0.23
+condition B timepoint 2: n = 48, M = -0.13, SD = 0.26
