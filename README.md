@@ -76,6 +76,14 @@ Several R packages are used by the scripts. See the dependencies listed in each 
 
 ## To do list
 1. Interpret extreme values of the p statistic (i.e., `< .0001` returns = `.0000`) and rounded to APA standards (i.e., `= .0085` is returned rather than `< .01`). 
+	- A rounding function is needed. Suggested pseudocode:
+
+```
+if x < .0001: "<.0001"
+elif x <.001: round(x, 4)
+elif x <.01: round(x, 3)
+else: round(x, 2)
+```	
 2. Remove the leading `0` of p values (i.e., set to `.0110` rather than `0.0110`). 
 3. Full knittr integration: put the scripts inside .Rmd scripts.
 
