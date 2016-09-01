@@ -24,6 +24,7 @@ library(dplyr)
 library(tidyr)
 library(ez)
 library(psych)  # for describeBy()
+library(weights)  # for rd(), a round() alternative 
 
 ########################################################################
 # data acquisition
@@ -38,8 +39,6 @@ reshaped_df <-
 
 #convert participant code to factor
 reshaped_df$participant <- factor(reshaped_df$participant)
-#check
-sapply(reshaped_df, class)
 
 # 2X2 mixed within-between anova
 # outcome_variable as DV, condition as between subjects IV and timepoint_1 as within subjects IV
@@ -59,7 +58,6 @@ descriptives <-
              fast=TRUE,  # subset of descriptive stats
              ranges = FALSE,
              trim=0) 
-#descriptives
 
 ########################################################################
 ## extract individual stats
@@ -89,23 +87,51 @@ anova_interaction_effect_geta2    <-  round(anova$ANOVA$ges[3], 2)
 # NHST
 # condition main effect
 if (anova_main_effect_condition_p < 0.05) {
-  condition_significance <- "A significant main effect was found for condition, "
+  condition_significance      <- "A significant main effect was found for condition, "
 } else {
-  condition_significance <- "No main effect was found for condition, "
+  condition_significance      <- "No main effect was found for condition, "
 }
 
 # timepoint main effect
 if (anova_main_effect_timepoint_p < 0.05) {
-  timepoint_significance <- "A significant main effect was found for time point, "
+  timepoint_significance      <- "A significant main effect was found for time point, "
 } else {
-  timepoint_significance <- "No main effect was found for time point, "
+  timepoint_significance      <- "No main effect was found for time point, "
+}
+
+# interaction effect
+if (anova_interaction_effect_p < 0.05) {
+  interaction_significance    <- "A significant condition*time point interaction effect was found, "
+} else {
+  interaction_significance    <- "No condition*time point interaction effect was found, "
+}
+
+# round p values using APA rules
+# condition main effect
+if (anova_main_effect_condition_p < 0.001) {
+  anova_main_effect_condition_p_APA_format <- "< .001"
+} else if (anova_main_effect_condition_p < 0.01) {
+  anova_main_effect_condition_p_APA_format <- paste("= ", rd(anova_main_effect_condition_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
+} else {
+  anova_main_effect_condition_p_APA_format <- paste("= ", rd(anova_main_effect_condition_p, 2), sep = "")
 }
 
 # timepoint main effect
-if (anova_interaction_effect_p < 0.05) {
-  interaction_significance <- "A significant condition*time point interaction effect was found, "
+if (anova_main_effect_timepoint_p < 0.001) {
+  anova_main_effect_timepoint_p_APA_format <- "< .001"
+} else if (anova_main_effect_timepoint_p < 0.01) {
+  anova_main_effect_timepoint_p_APA_format <- paste("= ", rd(anova_main_effect_timepoint_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
 } else {
-  interaction_significance <- "No condition*time point interaction effect was found, "
+  anova_main_effect_timepoint_p_APA_format <- paste("= ", rd(anova_main_effect_timepoint_p, 2), sep = "")
+}
+
+# interaction effect
+if (anova_interaction_effect_p < 0.001) {
+  anova_interaction_effect_p_APA_format <- "< .001"
+} else if (anova_interaction_effect_p < 0.01) {
+  anova_interaction_effect_p_APA_format <- paste("= ", rd(anova_interaction_effect_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
+} else {
+  anova_interaction_effect_p_APA_format <- paste("= ", rd(anova_interaction_effect_p, 2), sep = "")
 }
 
 # descriptive stats
@@ -124,20 +150,15 @@ n_condition_b_timepoint_1     <- round(descriptives[[2]][["n"]][[3]], 2)
 n_condition_a_timepoint_2     <- round(descriptives[[3]][["n"]][[3]], 2)
 n_condition_b_timepoint_2     <- round(descriptives[[4]][["n"]][[3]], 2)
 
-
 ########################################################################
 ## report stats
 
 anova_setup <- "A mixed within-between ANOVA was conducted with the outcome variable as DV, condition as the between subjects IV, and time point as the within subjects IV. "
 
 # anova output
-anova_main_effect_condition_output    <- paste("F(", anova_main_effect_condition_df1, ", ", anova_main_effect_condition_df2, ") = ", anova_main_effect_condition_F, ", p = ", anova_main_effect_condition_p, ", ηg2 = ", anova_main_effect_condition_geta2, ". ", sep = "") 
-anova_main_effect_timepoint_output    <- paste("F(", anova_main_effect_timepoint_df1,", ", anova_main_effect_timepoint_df2,") = ", anova_main_effect_timepoint_F, ", p = ", anova_main_effect_timepoint_p, ", ηg2 = ", anova_main_effect_timepoint_geta2, ". ", sep = "")  
-anova_interaction_effect_output       <- paste("F(", anova_interaction_effect_df1, ", ", anova_interaction_effect_df2, ") = ", anova_interaction_effect_F, ", p = ", anova_interaction_effect_p, ", ηg2 = ", anova_interaction_effect_geta2, ". ", sep = "") 
-
-#anova_main_effect_condition_output  # returns "main effect for condition: F(1, 98) = 0, p = 0.99496, ηg2 = 0"
-#anova_main_effect_timepoint_output  # returns "main effect for time point: F(1, 98) = 0, p = 0.98558, ηg2 = 0"
-#anova_interaction_effect_output     # returns "interaction effect: F(1, 98) = 9.43, p = 0.00276, ηg2 = 0.04"
+anova_main_effect_condition_output    <- paste("F(", anova_main_effect_condition_df1, ", ", anova_main_effect_condition_df2, ") = ", anova_main_effect_condition_F, ", p ", anova_main_effect_condition_p_APA_format, ", ηg2 = ", anova_main_effect_condition_geta2, ". ", sep = "") 
+anova_main_effect_timepoint_output    <- paste("F(", anova_main_effect_timepoint_df1,", ", anova_main_effect_timepoint_df2,") = ", anova_main_effect_timepoint_F, ", p ", anova_main_effect_timepoint_p_APA_format, ", ηg2 = ", anova_main_effect_timepoint_geta2, ". ", sep = "")  
+anova_interaction_effect_output       <- paste("F(", anova_interaction_effect_df1, ", ", anova_interaction_effect_df2, ") = ", anova_interaction_effect_F, ", p ", anova_interaction_effect_p_APA_format, ", ηg2 = ", anova_interaction_effect_geta2, ". ", sep = "") 
 
 # descriptive stats output
 desc_condition_A_timepoint_1          <- paste("condition A timepoint 1: n = ", n_condition_a_timepoint_1, ", M = ", mean_condition_a_timepoint_1, ", SD = ", sd_condition_a_timepoint_1, sep = "") 
@@ -145,14 +166,8 @@ desc_condition_B_timepoint_1          <- paste("condition B timepoint 1: n = ", 
 desc_condition_A_timepoint_2          <- paste("condition A timepoint 2: n = ", n_condition_a_timepoint_2, ", M = ", mean_condition_a_timepoint_2, ", SD = ", sd_condition_a_timepoint_2, sep = "") 
 desc_condition_B_timepoint_2          <- paste("condition B timepoint 2: n = ", n_condition_b_timepoint_2, ", M = ", mean_condition_b_timepoint_2, ", SD = ", sd_condition_b_timepoint_2, sep = "") 
 
-#desc_condition_A_timepoint_1  # returns "condition A timepoint 1: n = 52, M = -0.13, SD = 0.26"
-#desc_condition_B_timepoint_1  # returns "condition B timepoint 1: n = 48, M = -0.02, SD = 0.32"
-#desc_condition_A_timepoint_2  # returns "condition A timepoint 2: n = 52, M = -0.02, SD = 0.23"
-#desc_condition_B_timepoint_2  # returns "condition B timepoint 2: n = 48, M = -0.13, SD = 0.26"
-
 ## final summary
-anova_output_and_interpretation     <- paste(anova_setup, condition_significance, anova_main_effect_condition_output, timepoint_significance, anova_main_effect_timepoint_output, interaction_significance, anova_interaction_effect_output, sep = "")
-#anova_output_and_interpretation
+anova_output_and_interpretation       <- paste(anova_setup, condition_significance, anova_main_effect_condition_output, timepoint_significance, anova_main_effect_timepoint_output, interaction_significance, anova_interaction_effect_output, sep = "")
 
 ## write to disk
 sink("output ANOVA mixed within-between.txt")

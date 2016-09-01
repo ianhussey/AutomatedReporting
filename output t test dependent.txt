@@ -1,0 +1,1 @@
+A dependent t test demonstrated no significant differences between time point 1 (M = -0.08, SD = 0.29) and time point 2 (M = -0.07, SD = 0.25), t(99) = -0.14, p = .89, d = -0.01, 95% CI [-0.29, 0.27]. 
