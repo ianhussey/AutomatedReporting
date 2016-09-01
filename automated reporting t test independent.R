@@ -24,7 +24,7 @@ library(psych)  # for describeBy()
 
 ########################################################################
 # data acquisition
-setwd("~/Dropbox/Work/Programming/R/4 Reporting/R markdown & knitr/automatic reporting of tests/")
+setwd("~/git/Automated Reporting/")
 data_df <- read.csv("dataset.csv")
 
 ########################################################################
