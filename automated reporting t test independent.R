@@ -19,13 +19,14 @@ rm(list=ls())
 
 ########################################################################
 # dependencies 
+library(dplyr)
 library(effsize)
 library(psych)  # for describeBy()
 
 ########################################################################
 # data acquisition
 setwd("~/git/Automated Reporting/")
-data_df <- read.csv("dataset.csv")
+data_df <- read.csv("dataset 2.csv")
 
 ########################################################################
 ## tests
@@ -65,7 +66,7 @@ d_ci_upper <- round(cohens_d$conf.int[["sup"]], 2)
 d_interpretation <- cohens_d$magnitude[[1]]
 
 # NHST
-if (t_test_p<=0.05) {
+if (t_test_p < 0.05) {
   significance <- paste("An independent t test demonstrated significant differences of ", d_interpretation, " effect size between ", sep = "")
 } else {
   significance <- "An independent t test demonstrated no significant differences between "
@@ -104,7 +105,7 @@ t_test_output_and_interpretation <- paste(significance, descriptives_condition_a
 #t_test_output_and_interpretation
 
 ## write to disk
-sink("output t test independent.txt")
+sink("output t test independent 3.txt")
 cat(t_test_output_and_interpretation)  # cat() supresses the line number from being printed
 sink()
 
