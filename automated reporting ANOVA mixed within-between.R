@@ -35,7 +35,9 @@ data_df <- read.csv("dataset.csv")
 # reshape data for analysis
 reshaped_df <- 
   data_df %>%
-  gather(timepoint, outcome_variable, c(timepoint_1, timepoint_2))
+  gather(timepoint, 
+         outcome_variable, 
+         c(timepoint_1, timepoint_2))
 
 #convert participant code to factor
 reshaped_df$participant <- factor(reshaped_df$participant)
@@ -51,13 +53,14 @@ anova <- ezANOVA(data = reshaped_df,
                  type = 3)
 
 # descriptive stats by cell
-descriptives <-
+descriptives <- 
   reshaped_df %>%
   select(condition, timepoint, outcome_variable) %>%
   describeBy(list(reshaped_df$condition, reshaped_df$timepoint),  # do seperate stats for these cells
              fast=TRUE,  # subset of descriptive stats
              ranges = FALSE,
-             trim=0) 
+             trim=0)
+   
 
 ########################################################################
 ## extract individual stats

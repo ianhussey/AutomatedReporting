@@ -55,15 +55,15 @@ descriptives <-
 ## extract individual stats
 
 # t test
-t_test_est <- round(t_test$statistic[[1]], 2)
-t_test_df <- round(t_test$parameter[[1]], 2)
-t_test_p <- round(t_test$p.value[[1]], 5)
+t_test_est        <- round(t_test$statistic[[1]], 2)
+t_test_df         <- round(t_test$parameter[[1]], 2)
+t_test_p          <- round(t_test$p.value[[1]], 5)
 
 # effect size
-d_est <- round(cohens_d$estimate[[1]], 2)
-d_ci_lower <- round(cohens_d$conf.int[["inf"]], 2)
-d_ci_upper <- round(cohens_d$conf.int[["sup"]], 2)
-d_interpretation <- cohens_d$magnitude[[1]]
+d_est             <- round(cohens_d$estimate[[1]], 2)
+d_ci_lower        <- round(cohens_d$conf.int[["inf"]], 2)
+d_ci_upper        <- round(cohens_d$conf.int[["sup"]], 2)
+d_interpretation  <- cohens_d$magnitude[[1]]
 
 # round p values using APA rules
 if (t_test_p < 0.001) {

@@ -48,23 +48,23 @@ cohens_d <- cohen.d(d = data_df$timepoint_1,
 descriptives <-
   data_df %>%
   select(condition, timepoint_1, timepoint_2) %>%
-  psych::describe(fast=TRUE,  # subset of descriptive stats
+  psych::describe(fast = TRUE,  # subset of descriptive stats
                   ranges = FALSE,
-                  trim=0) 
+                  trim = 0) 
 
 ########################################################################
 ## extract individual stats
 
 # t test
-t_test_est <- round(t_test$statistic[[1]], 2)
-t_test_df <- round(t_test$parameter[[1]], 2)
-t_test_p <- round(t_test$p.value[[1]], 5)
+t_test_est        <- round(t_test$statistic[[1]], 2)
+t_test_df         <- round(t_test$parameter[[1]], 2)
+t_test_p          <- round(t_test$p.value[[1]], 5)
 
 # effect size
-d_est <- round(cohens_d$estimate[[1]], 2)
-d_ci_lower <- round(cohens_d$conf.int[["inf"]], 2)
-d_ci_upper <- round(cohens_d$conf.int[["sup"]], 2)
-d_interpretation <- cohens_d$magnitude[[1]]
+d_est             <- round(cohens_d$estimate[[1]], 2)
+d_ci_lower        <- round(cohens_d$conf.int[["inf"]], 2)
+d_ci_upper        <- round(cohens_d$conf.int[["sup"]], 2)
+d_interpretation  <- cohens_d$magnitude[[1]]
 
 # round p values using APA rules
 if (t_test_p < 0.001) {
@@ -84,11 +84,11 @@ if (t_test_p < 0.05) {
   
 # descriptive stats
 
-mean_timepoint_1 <- round(descriptives[["mean"]][[2]], 2)
-mean_timepoint_2 <- round(descriptives[["mean"]][[3]], 2)
-
-sd_timepoint_1 <- round(descriptives[["sd"]][[2]], 2)
-sd_timepoint_2 <- round(descriptives[["sd"]][[3]], 2)
+mean_timepoint_1  <- round(descriptives[["mean"]][[2]], 2)
+mean_timepoint_2  <- round(descriptives[["mean"]][[3]], 2)
+    
+sd_timepoint_1    <- round(descriptives[["sd"]][[2]], 2)
+sd_timepoint_2    <- round(descriptives[["sd"]][[3]], 2)
 
 ########################################################################
 ## report stats

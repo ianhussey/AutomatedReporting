@@ -19,7 +19,7 @@ rm(list=ls())
 ########################################################################
 # dependencies 
 library(lsr)  # for eta2
-library(MBESS)  # for 95% CI on eta2
+library(MBESS)  # for ci.pvaf(), 95% CI on eta2
 library(dplyr)
 library(effects)  # for effect(), for adjusted means
 library(psych)  # for describeBy()
@@ -73,8 +73,13 @@ ancova_eta2     <-  round(ancova[2,"eta.sq"], 2)    # where 2 specifies the main
 n_df <- data_df %>% dplyr::summarize(n_variable = n())
 n_integer <- n_df$n_variable
 # 2. 90% CIs
-ancova_eta2_ci_lower  <- round(ci.pvaf(F.value=ancova_F, df.1=ancova_df_1, df.2=ancova_df_2, N=n_integer, conf.level=.90)$Lower.Limit.Proportion.of.Variance.Accounted.for, 2)
-ancova_eta2_ci_upper  <- round(ci.pvaf(F.value=ancova_F, df.1=ancova_df_1, df.2=ancova_df_2, N=n_integer, conf.level=.90)$Upper.Limit.Proportion.of.Variance.Accounted.for, 2)
+ancova_eta2_ci        <- ci.pvaf(F.value = ancova_F, 
+                                 df.1 = ancova_df_1, 
+                                 df.2 = ancova_df_2, 
+                                 N = n_integer, 
+                                 conf.level = .90)
+ancova_eta2_ci_lower  <- round(ancova_eta2_ci$Lower.Limit.Proportion.of.Variance.Accounted.for, 2)
+ancova_eta2_ci_upper  <- round(ancova_eta2_ci$Upper.Limit.Proportion.of.Variance.Accounted.for, 2)
 
 # NHST
 if (ancova_p < 0.05) {
