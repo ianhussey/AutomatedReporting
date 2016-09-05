@@ -1,5 +1,5 @@
 # Automated Reporting 
-###### Run independent t tests, 2X2 mixed within between ANOVAs or ANCOVAs and produce manuscript-ready output and interpretations.
+###### Run analyses and produce manuscript-ready text and interpretations.
 
 ## License
 Copyright (c) Ian Hussey 2016 (ian.hussey@ugent.be)
