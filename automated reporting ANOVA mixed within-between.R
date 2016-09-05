@@ -1,188 +1,147 @@
 ########################################################################
-# Automated mixed within-between anova and ηg2 reporting, for use in knittr scripts
+# Automated mixed within-between anova reporting
 # Ian Hussey
 
-# all results checked against those returned by JASP
+# checked against results returned by JASP
 
 # usage:
 # 1. customise the working directory line, containing setwd() below
 # 2. run script
 
 # to do:
-# rounding of F and p values needs to be more adaptive, e.g., including < values.
-# confidence intervals needed for ηg2. However, I'm not aware of a package that does this.
+# none
 
 ########################################################################
 # Clean workspace
+
 rm(list=ls())
 
 ########################################################################
 # dependencies 
-library(lsr)  # for eta2
-library(MBESS)  # for 95% CI on eta2
+
 library(dplyr)
 library(tidyr)
-library(ez)
-library(psych)  # for describeBy()
-library(weights)  # for rd(), a round() alternative 
+library(ez)  # for ezANOVA
+library(schoRsch)  # for automated reporting of ez output
+library(stringr)
 
 ########################################################################
-# data acquisition
+# data acquisition and reshaping
+
 setwd("~/git/Automated Reporting/")
 data_df <- read.csv("dataset.csv")
 
-########################################################################
-# reshape data for analysis
 reshaped_df <- 
   data_df %>%
-  gather(timepoint, 
+  gather(timepoint,  # reshape data for analysis
          outcome_variable, 
-         c(timepoint_1, timepoint_2))
+         c(timepoint_1, timepoint_2)) %>%
+  mutate(participant = factor(participant),  #convert to factor for ANOVA
+         timepoint = factor(timepoint))  #convert to factor for ANOVA
 
-#convert participant code to factor
-reshaped_df$participant <- factor(reshaped_df$participant)
+########################################################################
+# analysis and descriptives via ez and schoRsch
 
 # 2X2 mixed within-between anova
-# outcome_variable as DV, condition as between subjects IV and timepoint_1 as within subjects IV
-# ezANOVA makes it easier to specify the model than aov() and easier to access the returned list. 
-anova <- ezANOVA(data = reshaped_df,
-                 dv = outcome_variable,
-                 within = timepoint,
-                 between = condition,
-                 wid = participant,
-                 type = 3)
+my_anova <- ez::ezANOVA(data = reshaped_df,
+                        dv = outcome_variable,
+                        within = timepoint,
+                        between = condition,
+                        wid = participant,
+                        type = 3,
+                        detailed = TRUE)
 
-# descriptive stats by cell
-descriptives <- 
-  reshaped_df %>%
-  select(condition, timepoint, outcome_variable) %>%
-  describeBy(list(reshaped_df$condition, reshaped_df$timepoint),  # do seperate stats for these cells
-             fast=TRUE,  # subset of descriptive stats
-             ranges = FALSE,
-             trim=0)
-   
+# summarise output
+anova_summary <- schoRsch::anova_out(my_anova, 
+                                     print = TRUE, 
+                                     sph.cor = "GG", 
+                                     mau.p = 0.05,
+                                     etasq = "generalized", 
+                                     dfsep = ", ")
 
-########################################################################
-## extract individual stats
-
-# anova results
-# nb generalised eta squared is returned here because it has equivalent interpretations
-# and is unaffected by the factorial design, whereas eta2 and partial eta2 are.
-# See Olejnik & Algina (2003), Bakeman (2005), and Lakens (2013).
-anova_main_effect_condition_df1   <-  round(anova$ANOVA$DFn[1], 2)
-anova_main_effect_condition_df2   <-  round(anova$ANOVA$DFd[1], 2)
-anova_main_effect_condition_F     <-  round(anova$ANOVA$F[1], 2)
-anova_main_effect_condition_p     <-  round(anova$ANOVA$p[1], 5)
-anova_main_effect_condition_geta2 <-  round(anova$ANOVA$ges[1], 2)
-
-anova_main_effect_timepoint_df1   <-  round(anova$ANOVA$DFn[2], 2)
-anova_main_effect_timepoint_df2   <-  round(anova$ANOVA$DFd[2], 2)
-anova_main_effect_timepoint_F     <-  round(anova$ANOVA$F[2], 2)
-anova_main_effect_timepoint_p     <-  round(anova$ANOVA$p[2], 5)
-anova_main_effect_timepoint_geta2 <-  round(anova$ANOVA$ges[2], 2)
-
-anova_interaction_effect_df1      <-  round(anova$ANOVA$DFn[3], 2)
-anova_interaction_effect_df2      <-  round(anova$ANOVA$DFd[3], 2)
-anova_interaction_effect_F        <-  round(anova$ANOVA$F[3], 2)
-anova_interaction_effect_p        <-  round(anova$ANOVA$p[3], 5)
-anova_interaction_effect_geta2    <-  round(anova$ANOVA$ges[3], 2)
-
-# NHST
-# condition main effect
-if (anova_main_effect_condition_p < 0.05) {
-  condition_significance      <- "A significant main effect was found for condition, "
-} else {
-  condition_significance      <- "No main effect was found for condition, "
-}
-
-# timepoint main effect
-if (anova_main_effect_timepoint_p < 0.05) {
-  timepoint_significance      <- "A significant main effect was found for time point, "
-} else {
-  timepoint_significance      <- "No main effect was found for time point, "
-}
-
-# interaction effect
-if (anova_interaction_effect_p < 0.05) {
-  interaction_significance    <- "A significant condition*time point interaction effect was found, "
-} else {
-  interaction_significance    <- "No condition*time point interaction effect was found, "
-}
-
-# round p values using APA rules
-# condition main effect
-if (anova_main_effect_condition_p < 0.001) {
-  anova_main_effect_condition_p_APA_format <- "< .001"
-} else if (anova_main_effect_condition_p < 0.01) {
-  anova_main_effect_condition_p_APA_format <- paste("= ", rd(anova_main_effect_condition_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
-} else {
-  anova_main_effect_condition_p_APA_format <- paste("= ", rd(anova_main_effect_condition_p, 2), sep = "")
-}
-
-# timepoint main effect
-if (anova_main_effect_timepoint_p < 0.001) {
-  anova_main_effect_timepoint_p_APA_format <- "< .001"
-} else if (anova_main_effect_timepoint_p < 0.01) {
-  anova_main_effect_timepoint_p_APA_format <- paste("= ", rd(anova_main_effect_timepoint_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
-} else {
-  anova_main_effect_timepoint_p_APA_format <- paste("= ", rd(anova_main_effect_timepoint_p, 2), sep = "")
-}
-
-# interaction effect
-if (anova_interaction_effect_p < 0.001) {
-  anova_interaction_effect_p_APA_format <- "< .001"
-} else if (anova_interaction_effect_p < 0.01) {
-  anova_interaction_effect_p_APA_format <- paste("= ", rd(anova_interaction_effect_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
-} else {
-  anova_interaction_effect_p_APA_format <- paste("= ", rd(anova_interaction_effect_p, 2), sep = "")
-}
-
-# descriptive stats
-mean_condition_a_timepoint_1  <- round(descriptives[[1]][["mean"]][[3]], 2)
-mean_condition_b_timepoint_1  <- round(descriptives[[2]][["mean"]][[3]], 2)
-mean_condition_a_timepoint_2  <- round(descriptives[[3]][["mean"]][[3]], 2)
-mean_condition_b_timepoint_2  <- round(descriptives[[4]][["mean"]][[3]], 2)
-
-sd_condition_a_timepoint_1    <- round(descriptives[[1]][["sd"]][[3]], 2)
-sd_condition_b_timepoint_1    <- round(descriptives[[2]][["sd"]][[3]], 2)
-sd_condition_a_timepoint_2    <- round(descriptives[[3]][["sd"]][[3]], 2)
-sd_condition_b_timepoint_2    <- round(descriptives[[4]][["sd"]][[3]], 2)
-
-n_condition_a_timepoint_1     <- round(descriptives[[1]][["n"]][[3]], 2)
-n_condition_b_timepoint_1     <- round(descriptives[[2]][["n"]][[3]], 2)
-n_condition_a_timepoint_2     <- round(descriptives[[3]][["n"]][[3]], 2)
-n_condition_b_timepoint_2     <- round(descriptives[[4]][["n"]][[3]], 2)
+# calculate descriptives
+desc_stats <- 
+  ez::ezStats(data = reshaped_df,
+              dv = .(outcome_variable), 
+              wid = .(participant),
+              between = .(condition),
+              within = .(timepoint),
+              type = 3) %>%
+  mutate(Mean = round(Mean, 2),  # round for later reporting
+         SD = round(SD, 2)) %>%
+  select(-FLSD)
 
 ########################################################################
-## report stats
+# Novel steps beyond ez and schoRsch from here onwards
+########################################################################
+# extract output
 
-anova_setup <- "A mixed within-between ANOVA was conducted with the outcome variable as DV, condition as the between subjects IV, and time point as the within subjects IV. "
+### anova
+## output
+anova_ouptut <- 
+  as.data.frame(anova_summary$`--- FORMATTED RESULTS ------------------------------------`) %>%  # anova_out returns a list of dfs. the appropriate df must be extracted.
+  mutate(Text = as.character(Text))  # Text is stored as a factor, which must be converted to characters to be extracted
 
-# anova output
-anova_main_effect_condition_output    <- paste("F(", anova_main_effect_condition_df1, ", ", anova_main_effect_condition_df2, ") = ", anova_main_effect_condition_F, ", p ", anova_main_effect_condition_p_APA_format, ", ηg2 = ", anova_main_effect_condition_geta2, ". ", sep = "") 
-anova_main_effect_timepoint_output    <- paste("F(", anova_main_effect_timepoint_df1,", ", anova_main_effect_timepoint_df2,") = ", anova_main_effect_timepoint_F, ", p ", anova_main_effect_timepoint_p_APA_format, ", ηg2 = ", anova_main_effect_timepoint_geta2, ". ", sep = "")  
-anova_interaction_effect_output       <- paste("F(", anova_interaction_effect_df1, ", ", anova_interaction_effect_df2, ") = ", anova_interaction_effect_F, ", p ", anova_interaction_effect_p_APA_format, ", ηg2 = ", anova_interaction_effect_geta2, ". ", sep = "") 
+condition_output    <- anova_ouptut %>% filter(Effect == "condition") %>% .$Text  # convert text df to individual variables
+timepoint_output    <- anova_ouptut %>% filter(Effect == "timepoint") %>% .$Text
+interaction_output  <- anova_ouptut %>% filter(Effect == "condition:timepoint") %>% .$Text
 
-# descriptive stats output
-desc_condition_A_timepoint_1          <- paste("condition A timepoint 1: n = ", n_condition_a_timepoint_1, ", M = ", mean_condition_a_timepoint_1, ", SD = ", sd_condition_a_timepoint_1, sep = "") 
-desc_condition_B_timepoint_1          <- paste("condition B timepoint 1: n = ", n_condition_b_timepoint_1, ", M = ", mean_condition_b_timepoint_1, ", SD = ", sd_condition_b_timepoint_1, sep = "") 
-desc_condition_A_timepoint_2          <- paste("condition A timepoint 2: n = ", n_condition_a_timepoint_2, ", M = ", mean_condition_a_timepoint_2, ", SD = ", sd_condition_a_timepoint_2, sep = "") 
-desc_condition_B_timepoint_2          <- paste("condition B timepoint 2: n = ", n_condition_b_timepoint_2, ", M = ", mean_condition_b_timepoint_2, ", SD = ", sd_condition_b_timepoint_2, sep = "") 
+## p values (for NHST)
+anova_p <- 
+  as.data.frame(anova_summary$`--- ANOVA RESULTS     ------------------------------------`) %>%  # anova_out returns a list of dfs. the appropriate df must be extracted.
+  select(Effect, p) %>%  # select p value column
+  mutate(p = as.character(p))
+
+condition_p     <- anova_p %>% filter(Effect == "condition") %>% .$p  # convert text df to individual variables
+timepoint_p     <- anova_p %>% filter(Effect == "timepoint") %>% .$p
+interaction_p   <- anova_p %>% filter(Effect == "condition:timepoint") %>% .$p
+
+## descriptives
+a_1_m   <- desc_stats %>% filter(condition == "a", timepoint == "timepoint_1") %>% .$Mean  # convert df to individual variables
+a_2_m   <- desc_stats %>% filter(condition == "a", timepoint == "timepoint_2") %>% .$Mean
+b_1_m   <- desc_stats %>% filter(condition == "b", timepoint == "timepoint_1") %>% .$Mean
+b_2_m   <- desc_stats %>% filter(condition == "b", timepoint == "timepoint_2") %>% .$Mean
+a_1_sd  <- desc_stats %>% filter(condition == "a", timepoint == "timepoint_1") %>% .$SD
+a_2_sd  <- desc_stats %>% filter(condition == "a", timepoint == "timepoint_2") %>% .$SD
+b_1_sd  <- desc_stats %>% filter(condition == "b", timepoint == "timepoint_1") %>% .$SD
+b_2_sd  <- desc_stats %>% filter(condition == "b", timepoint == "timepoint_2") %>% .$SD
+
+########################################################################
+# convert output to natural langauge
+
+condition_text    <- paste(ifelse(condition_p < 0.05, 
+                                  "A significant main effect was found for condition,",
+                                  "No main effect was found for condition,"),
+                           condition_output)
+timepoint_text    <- paste(ifelse(timepoint_p < 0.05, 
+                                  ". A significant main effect was found for time point,",
+                                  ". No main effect was found for time point,"),
+                           timepoint_output)
+interaction_text  <- paste(ifelse(interaction_p < 0.05, 
+                                  ". A significant condition*time point interaction effect was found,",
+                                  ". No condition*time point interaction effect was found,"),
+                           interaction_output)
+
+########################################################################
+## combine and write to disk
+
+preamble <- "A mixed within-between ANOVA was conducted with the outcome variable as DV, condition as the between subjects IV, and time point as the within subjects IV. "
 
 ## final summary
-anova_output_and_interpretation       <- paste(anova_setup, condition_significance, anova_main_effect_condition_output, timepoint_significance, anova_main_effect_timepoint_output, interaction_significance, anova_interaction_effect_output, sep = "")
+anova_text <- 
+  paste(preamble, 
+        condition_text, 
+        timepoint_text, 
+        interaction_text, 
+        ".",  # final full stop needed at end of sentence
+        sep = "") %>%
+  str_replace_all("  ", " ")  # remove double spaces. not sure how they're generated, but easy to remove here.
 
 ## write to disk
 sink("output ANOVA mixed within-between.txt")
-cat(anova_output_and_interpretation)  # cat() supresses the line number from being printed
+cat(anova_text)  # cat() supresses the line number from being printed
 cat("\n")
 cat("\n")
-cat(desc_condition_A_timepoint_1)
-cat("\n")
-cat(desc_condition_B_timepoint_1)
-cat("\n")
-cat(desc_condition_A_timepoint_2)
-cat("\n")
-cat(desc_condition_B_timepoint_2)
+desc_stats
 sink()
 

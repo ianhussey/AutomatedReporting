@@ -9,15 +9,18 @@
 # 2. run script
 
 # to do:
-# rounding of F and p values needs to be more adaptive, e.g., including < values.
-# ezANOVA() would be an alternative regression method with nicer output
+# ezANOVA() would be an alternative regression method with nicer output 
+# if changed, change the variable extraction to be more transparent
+# this would allow for ng2 to be reported, but would then break the 90% CI.
 
 ########################################################################
 # Clean workspace
+
 rm(list=ls())
 
 ########################################################################
 # dependencies 
+
 library(lsr)  # for eta2
 library(MBESS)  # for ci.pvaf(), 95% CI on eta2
 library(dplyr)
@@ -27,11 +30,13 @@ library(weights)  # for rd(), a round() alternative
 
 ########################################################################
 # data acquisition
+
 setwd("~/git/Automated Reporting/")
 data_df <- read.csv("dataset.csv")
 
 ########################################################################
 # ancova with timepoint_2 as DV, condition as IV, and timepoint_1 as covariate
+
 model1 <- lm(formula = timepoint_2 ~ timepoint_1 + condition, 
              data = data_df)  # NB if anova() had been used below there would be ordering effects for the model: must specify as DV ~ covariate + IV
 ancova <- etaSquared(model1, 
@@ -52,7 +57,6 @@ n_condition_b <- round(n_per_condition[[2]][["n"]][[1]], 2)
 
 # adjusted means & sds
 adjusted_means <- effect("condition", model1)
-#data.frame(adjusted_means)  # includes means and se, but not sd. this is converted below.
 
 ########################################################################
 ## extract individual stats
@@ -82,44 +86,47 @@ ancova_eta2_ci_lower  <- round(ancova_eta2_ci$Lower.Limit.Proportion.of.Variance
 ancova_eta2_ci_upper  <- round(ancova_eta2_ci$Upper.Limit.Proportion.of.Variance.Accounted.for, 2)
 
 # NHST
-if (ancova_p < 0.05) {
-  significance    <- "A main effect for condition was found: after controlling for time point 1 scores, scores at time point 2 were significantly different between "
-} else {
-  significance    <- "No main effect for condition was found: after controlling for time point 1 scores, no significant differences were found between "
-}
+nhst <- ifelse(ancova_p < 0.05, 
+               "A main effect for condition was found: after controlling for time point 1 scores, scores at time point 2 were significantly different between ",
+               "No main effect for condition was found: after controlling for time point 1 scores, no significant differences were found between ")
 
 # round p values using APA rules
-if (ancova_p < 0.001) {
-  ancova_p_APA_format <- "< .001"
-} else if (ancova_p < 0.01) {
-  ancova_p_APA_format <- paste("= ", rd(ancova_p, 3), sep = "")  # rd() rounds, converts to string, and removes the leading 0.
-} else {
-  ancova_p_APA_format <- paste("= ", rd(ancova_p, 2), sep = "")
-}
+ancova_p <- ifelse(ancova_p < 0.001, "< .001",
+                   ifelse(ancova_p < 0.01,
+                          paste("= ", rd(ancova_p, 3), sep = ""),  # rd() rounds, converts to string, and removes the leading 0.
+                          ancova_p_APA_format <- paste("= ", rd(ancova_p, 2), sep = "")))
 
 # descriptive stats
 adjusted_mean_condition_a   <- round(data.frame(adjusted_means)[["fit"]][[1]], 2)
 adjusted_mean_condition_b   <- round(data.frame(adjusted_means)[["fit"]][[2]], 2)
-# NB: sd = se * sqrt(n)
-adjusted_sd_condition_a     <- round(data.frame(adjusted_means)[["se"]][[1]] * sqrt(n_condition_a), 2)
+adjusted_sd_condition_a     <- round(data.frame(adjusted_means)[["se"]][[1]] * sqrt(n_condition_a), 2)  # NB: sd = se * sqrt(n)
 adjusted_sd_condition_b     <- round(data.frame(adjusted_means)[["se"]][[2]] * sqrt(n_condition_b), 2)
 
 ########################################################################
-## report stats
+# convert output to natural langauge
 
 # ancova
-acnova_setup <- "An ANCOVA was conducted with time point 2 as the DV, condition as the IV, and time point 1 as a covariate. "
+preamble <- "An ANCOVA was conducted with time point 2 as the DV, condition as the IV, and time point 1 as a covariate. "
 ancova_output <- paste(", F(", ancova_df_1, ", ", ancova_df_2, ") = ", ancova_F, ", p ", ancova_p_APA_format, ", η2 = ", ancova_eta2, ", 90% CI [", ancova_eta2_ci_lower, ", ", ancova_eta2_ci_upper, "]. ", sep = "") 
 
 # descriptive stats output
-desc_condition_A <- paste("condition A (n = ", n_condition_a, ", adjusted M = ", adjusted_mean_condition_a, ", SD = ", adjusted_sd_condition_a, ")", sep = "") 
-desc_condition_B <- paste("condition B (n = ", n_condition_b, ", adjusted M = ", adjusted_mean_condition_b, ", SD = ", adjusted_sd_condition_b, ")", sep = "") 
+desc_a <- paste("condition A (n = ", n_condition_a, ", adjusted M = ", adjusted_mean_condition_a, ", SD = ", adjusted_sd_condition_a, ")", sep = "") 
+desc_b <- paste("condition B (n = ", n_condition_b, ", adjusted M = ", adjusted_mean_condition_b, ", SD = ", adjusted_sd_condition_b, ")", sep = "") 
+
+########################################################################
+## combine and write to disk
 
 ## final summary
-ancova_output_and_interpretation <- paste(acnova_setup, significance, desc_condition_A, " and ", desc_condition_B, ancova_output, sep = "")
+ancova_text <- paste(preamble, 
+                     nhst, 
+                     desc_a, 
+                     " and ", 
+                     desc_b, 
+                     ancova_output, 
+                     sep = "")
 
 ## write to disk
 sink("output ANCOVA.txt")
-cat(ancova_output_and_interpretation)  # cat() supresses the line number from being printed
+cat(ancova_text)  # cat() supresses the line number from being printed
 sink()
 

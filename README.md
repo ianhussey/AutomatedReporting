@@ -1,5 +1,5 @@
 # Automated Reporting 
-###### Run independent and dependent t tests, 2X2 mixed within between ANOVAs or ANCOVAs and produce manuscript-ready output and interpretations.
+###### Run independent t tests, 2X2 mixed within between ANOVAs or ANCOVAs and produce manuscript-ready output and interpretations.
 
 ## License
 Copyright (c) Ian Hussey 2016 (ian.hussey@ugent.be)
@@ -11,7 +11,7 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 ## Version
-0.1.1
+0.1.2
 
 ## Description & purpose
 When run on an appropriately formatted dataset, these scripts conduct an independent t test, ANOVA or ANCOVA and output the results to a .txt file in a format that can be pasted straight into a manuscript. This includes test statistics, df, p values, effect sizes, descriptive statistics, and the interpretation of the null hypothesis significance test.
@@ -25,7 +25,6 @@ This has three primary purposes and advantages:
 ## Included tests
 
 - Independent t test (Welch)
-- Dependent t test (Welch)
 - 2X2 mixed within-between ANOVA (for between groups pre-post designs)
 - ANCOVA with single covariate (time point 2 as DV, condition as IV, time point 1 as covariate: for between groups pre-post designs).
 
@@ -63,8 +62,12 @@ Several R packages are used by the scripts. See the dependencies listed in each 
 
 ## To do list
 1. Full knittr integration: put the scripts inside .Rmd scripts.
+2. schorRsh use could do with imporement - ANOVA only right now, some issues with ANCOVA and t test.
 
 ## Changelog
+0.1.2
+
+- better use of schoRsch. 
 0.1.1 
 
 - p values are rounded and reported using APA formatting. 
