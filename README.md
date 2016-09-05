@@ -14,7 +14,11 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 0.1.2
 
 ## Description & purpose
-When run on an appropriately formatted dataset, these scripts conduct an independent t test, ANOVA or ANCOVA and output the results to a .txt file in a format that can be pasted straight into a manuscript. This includes test statistics, df, p values, effect sizes, descriptive statistics, and the interpretation of the null hypothesis significance test.
+When run on an appropriately formatted dataset, these scripts 
+
+1. Conduct an given statistical test
+2. Extract the and interpret the results results into a manuscript ready text that follows APA style. This includes test statistics, df, p values, effect sizes, descriptive statistics, and the interpretation of the null hypothesis significance test.
+3. Save this text to a `.txt` file that can be pasted straight into a manuscript. 
 
 This has three primary purposes and advantages:
 
@@ -24,9 +28,10 @@ This has three primary purposes and advantages:
 
 ## Included tests
 
-- Independent t test (Welch)
-- 2X2 mixed within-between ANOVA (for between groups pre-post designs)
+- Independent t test (Welch).
+- 2X2 mixed within-between ANOVA (for between groups pre-post designs).
 - ANCOVA with single covariate (time point 2 as DV, condition as IV, time point 1 as covariate: for between groups pre-post designs).
+- Bayesian BEST test (Kruschke, 2013), a Bayesian t test alternative.
 
 ## Input
 The included dataset comes from a study on evaluative learning. The scripts employ the following variables:
@@ -65,9 +70,14 @@ Several R packages are used by the scripts. See the dependencies listed in each 
 2. schorRsh use could do with imporement - ANOVA only right now, some issues with ANCOVA and t test.
 
 ## Changelog
+0.1.3
+
+- BEST test (Krushke, 2013), a Bayesian t test alternative.
+
 0.1.2
 
 - better use of schoRsch. 
+
 0.1.1 
 
 - p values are rounded and reported using APA formatting. 
