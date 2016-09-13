@@ -93,16 +93,21 @@ b_n   <- desc_stats %>% filter(condition == "b") %>% .$N
 ########################################################################
 # convert output to natural langauge
 
+# set the DV and condition names 
+DV_name               <- "IAT D1 change scores"
+condition_a_name      <- "the low condition"
+condition_b_name      <- "the high condition"
+
 nhst <- ifelse(t_test_p < 0.05, 
-               paste("An independent t test demonstrated significant differences of ", d_interpretation, " effect size between ", sep = ""),
+               paste("An independent t test demonstrated significant differences of ", d_interpretation, " effect size in ", DV_name, " between ", sep = ""),
                paste("An independent t test demonstrated non-significant differences of ", d_interpretation, " effect size between ", sep = ""))
 
 # t test and d
 t_test_output <- paste(", t(", t_test_df, ") = ", t_test_est, ", p ", t_test_p, ", d = ", d_est, ", 95% CI [", d_ci_lower, ", ", d_ci_upper, "]. ", sep = "")
 
 # descriptive stats
-desc_a <- paste("condition A (n = ", a_n, ", M = ", a_m, ", SD = ", a_sd, ")", sep = "")
-desc_b <- paste("condition B (n = ", b_n, ", M = ", b_m, ", SD = ", b_sd, ")", sep = "")
+desc_a <- paste(condition_a_name, " (n = ", a_n, ", M = ", a_m, ", SD = ", a_sd, ")", sep = "")
+desc_b <- paste(condition_b_name, " (n = ", b_n, ", M = ", b_m, ", SD = ", b_sd, ")", sep = "")
 
 ########################################################################
 ## combine and write to disk
