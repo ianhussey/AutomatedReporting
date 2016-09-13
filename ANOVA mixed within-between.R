@@ -69,7 +69,7 @@ desc_stats <-
               type = 3) %>%
   mutate(Mean = round(Mean, 2),  # round for later reporting
          SD = round(SD, 2)) %>%
-  select(-FLSD)
+  select(-FLSD)  # drop the least sig diff tests, unnecessary
 
 ########################################################################
 # Novel steps beyond ez and schoRsch from here onwards

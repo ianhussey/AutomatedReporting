@@ -95,8 +95,8 @@ m_condition_b         <- BEST_output_df %>% filter(rowname == "mu2") %>% .$mean
 
 # set the DV and condition names 
 DV_name               <- "IAT D1 change scores"
-condition_a_name      <- "the flowers condition"
-condition_b_name      <- "the insects condition"
+condition_a_name      <- "the low condition"
+condition_b_name      <- "the high condition"
 
 # interpret effect size based on Cohen's (1988) guidelines
 es_size               <- ifelse(abs(es_mode) < 0.2, "negligable", 
@@ -122,8 +122,8 @@ es_hid_includes_zero  <- ifelse(differences_boolean == 1,
 conclusions           <- ifelse(equality_boolean == 1,  # NB even if differences==1 here, effect is still so small as to consider groups equal.
                                 "were credibly equal. ",
                                 ifelse(differences_boolean == 1,
-                                       "were credbily different. ",
-                                       "were neither credibly different nor credibly equal. No firm conclusions could therefore be drawn"))
+                                       "were credibly different. ",
+                                       "were neither credibly different nor credibly equal. No firm conclusions could therefore be drawn. "))
 
 ########################################################################
 # combine all into a natural langauge string
@@ -143,7 +143,7 @@ BEST_text             <- sprintf("A Bayesian BEST test (Kruschke, 2013) was used
 # indicated that 99.89% of credible effect sizes were greater than 0, and 1.53% were within the ROPE. The most credible 
 # effect size was of medium size with a highest density interval that did not overlap zero, Mode d = 0.67, 
 # 95% HDI [0.23, 1.14]. We therefore concluded that IAT D1 change scores between the flowers condition (M = 0.11) and the 
-# insects condition (M = -0.11) were credbily different. "
+# insects condition (M = -0.11) were credibly different. "
 
 ########################################################################
 # write data to disk
