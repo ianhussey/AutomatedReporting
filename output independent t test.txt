@@ -1,0 +1,1 @@
+A Welch's independent t test demonstrated significant differences of medium effect size in change scores between the flowers condition (n = 52, M = 0.11, SD = 0.33) and the insects condition (n = 48, M = -0.1, SD = 0.35), t(96.77) = 3.07, p = .003, d = 0.61, 95% CI [0.2, 1.03]. 
