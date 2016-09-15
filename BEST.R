@@ -57,6 +57,9 @@ attach(data_df)  # use the input data frame for all tests below
 BEST <- BESTmcmc(change_score[condition == "a"],  # SET THE DV AND CONDITION NAMES HERE
                  change_score[condition == "b"])
 
+########################################################################
+# save to/read from disk
+
 # save analysis to disk 
 save(BEST, file = analysis_file_name)  
 
