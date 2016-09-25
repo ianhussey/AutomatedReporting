@@ -67,11 +67,19 @@ d_ci_lower        <- round(cohens_d$conf.int[["inf"]], 2)
 d_ci_upper        <- round(cohens_d$conf.int[["sup"]], 2)
 d_interpretation  <- cohens_d$magnitude[[1]]
 
+
 # round p values using APA rules
-t_test_p <- ifelse(t_test_p < 0.001, "< .001", 
-                   ifelse(t_test_p < 0.01,
-                          paste("= ", rd(t_test_p, 3), sep = ""),  # rd() rounds, converts to string, and removes the leading 0.
-                          paste("= ", rd(t_test_p, 2), sep = "")))
+APA_p_value <- function(x){
+  require(weights)
+  y <- 
+    ifelse(x == 1, "> .99", 
+           ifelse(x < 0.001, "< .001", 
+                  ifelse(x < 0.01,
+                         paste("= ", weights::rd(x, 3), sep = ""),  # rd() rounds, converts to string, and removes the leading 0.
+                         paste("= ", weights::rd(x, 2), sep = ""))))
+  return(y)
+}
+t_test_p <- APA_p_value(t_test_p)
 
 ## descriptives
 a_m   <- desc_stats %>% filter(condition == condition_a_code_in_data) %>% .$Mean  # convert df to individual variables
