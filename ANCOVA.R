@@ -1,25 +1,10 @@
-########################################################################
-# Automated 2 way ancova and η2 reporting, for use in knittr scripts
-# Ian Hussey
+# title: 2 way ancova with η2
+# author: Ian Hussey (ian.hussey@ugent.be)
+# license: GPLv3+
 
-# checked against results returned by JASP
+ 
+# dependencies ------------------------------------------------------------
 
-# usage:
-# 1. customise the working directory line, containing setwd() below
-# 2. run script
-
-# to do:
-# ezANOVA() would be an alternative regression method with nicer output 
-# if changed, change the variable extraction to be more transparent
-# this would allow for ng2 to be reported, but would then break the 90% CI.
-
-########################################################################
-# Clean workspace
-
-rm(list=ls())
-
-########################################################################
-# dependencies 
 
 library(lsr)  # for eta2
 library(MBESS)  # for ci.pvaf(), 95% CI on eta2
@@ -28,16 +13,18 @@ library(effects)  # for effect(), for adjusted means
 library(psych)  # for describeBy()
 library(weights)  # for rd(), a round() alternative 
 
-########################################################################
-# data acquisition
+
+# data acquisition --------------------------------------------------------
+
 
 setwd("~/git/Automated Reporting/")
 data_df <- read.csv("dataset.csv")
 
-########################################################################
-# ancova with timepoint_2 as DV, condition as IV, and timepoint_1 as covariate
 
-model1 <- lm(formula = timepoint_2 ~ timepoint_1 + condition, 
+# ancova with 2x DV, 2x IV, and one covariate -----------------------------
+
+
+model1 <- lm(formula = timepoint_2 ~ condition + timepoint_1, 
              data = data_df)  # NB if anova() had been used below there would be ordering effects for the model: must specify as DV ~ covariate + IV
 ancova <- etaSquared(model1, 
                      type = 3, 
@@ -58,8 +45,9 @@ n_condition_b <- round(n_per_condition[[2]][["n"]][[1]], 2)
 # adjusted means & sds
 adjusted_means <- effect("condition", model1)
 
-########################################################################
-## extract individual stats
+
+# extract individual stats ------------------------------------------------
+
 
 # ancova
 # NB this returns the main effect only, not the covariate effect
@@ -87,8 +75,8 @@ ancova_eta2_ci_upper  <- round(ancova_eta2_ci$Upper.Limit.Proportion.of.Variance
 
 # NHST
 nhst <- ifelse(ancova_p < 0.05, 
-               "A main effect for condition was found: after controlling for time point 1 scores, scores at time point 2 were significantly different between ",
-               "No main effect for condition was found: after controlling for time point 1 scores, no significant differences were found between ")
+               "A main effect for condition was found: after controlling for scores at timepoint 1, scores at timepoint 2 were significantly different between ",
+               "No main effect for condition was found: after controlling for scores at timepoint 1, no significant differences were found between scores at timepoint 2 between ")
 
 # round p values using APA rules
 ancova_p <- ifelse(ancova_p < 0.001, "< .001",
@@ -102,19 +90,21 @@ adjusted_mean_condition_b   <- round(data.frame(adjusted_means)[["fit"]][[2]], 2
 adjusted_sd_condition_a     <- round(data.frame(adjusted_means)[["se"]][[1]] * sqrt(n_condition_a), 2)  # NB: sd = se * sqrt(n)
 adjusted_sd_condition_b     <- round(data.frame(adjusted_means)[["se"]][[2]] * sqrt(n_condition_b), 2)
 
-########################################################################
-# convert output to natural langauge
+
+# convert output to natural langauge --------------------------------------
+
 
 # ancova
-preamble <- "An ANCOVA was conducted with time point 2 as the DV, condition as the IV, and time point 1 as a covariate. "
+preamble <- "An ANCOVA was conducted with scores at timepoint 2 as the DV, experimental condition as the IV, and scores at timepoint 1 entered as a covariate. "
 ancova_output <- paste(", F(", ancova_df_1, ", ", ancova_df_2, ") = ", ancova_F, ", p ", ancova_p_APA_format, ", η2 = ", ancova_eta2, ", 90% CI [", ancova_eta2_ci_lower, ", ", ancova_eta2_ci_upper, "]. ", sep = "") 
 
 # descriptive stats output
 desc_a <- paste("condition A (n = ", n_condition_a, ", adjusted M = ", adjusted_mean_condition_a, ", SD = ", adjusted_sd_condition_a, ")", sep = "") 
 desc_b <- paste("condition B (n = ", n_condition_b, ", adjusted M = ", adjusted_mean_condition_b, ", SD = ", adjusted_sd_condition_b, ")", sep = "") 
 
-########################################################################
-## combine and write to disk
+
+# combine and write to disk -----------------------------------------------
+
 
 ## final summary
 ancova_text <- paste(preamble, 
@@ -126,7 +116,7 @@ ancova_text <- paste(preamble,
                      sep = "")
 
 ## write to disk
-sink("output ANCOVA.txt")
+sink("ANCOVA output.txt")
 cat(ancova_text)  # cat() supresses the line number from being printed
 sink()
 
