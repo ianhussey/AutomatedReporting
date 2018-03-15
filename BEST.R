@@ -31,6 +31,9 @@
 # 3. Decision making regarding whether the effect size's HDI includes zero assumes a unimodal plot/single interval, 
 # however this should be checked against the plot. 
 
+# To dos
+# change equivalence criterion from >95% in ROPE to HDI is within ROPE?
+
 ########################################################################
 # Clean the workspace
 
@@ -49,6 +52,8 @@ library(reshape2)
 DV_name                 <- "IAT D1 scores"
 condition_a_name        <- "the low condition"
 condition_b_name        <- "the high condition"
+condition_a_code_in_data  <- "a"
+condition_b_code_in_data  <- "b"
 analysis_file_name      <- "BEST.RData"
 output_file_name        <- "output BEST.txt"
 ROPE                    <- c(-0.2, 0.2)  # region of practical equivalence (ROPE) for assessing group equality.
@@ -62,8 +67,8 @@ data_df <-read.csv("dataset.csv")
 # BEST test
 attach(data_df)  # use the input data frame for all tests below
 
-BEST <- BESTmcmc(change_score[condition == "a"],  # SET THE DV AND CONDITION NAMES HERE
-                 change_score[condition == "b"],  # SET THE DV AND CONDITION NAMES HERE
+BEST <- BESTmcmc(change_score[condition == condition_a_code_in_data],  
+                 change_score[condition == condition_b_code_in_data],  
                  burnInSteps = 1000,  # Increase this if convergence is insufficient
                  numSavedSteps = 1e+05,  # Increase this or thinsteps if effective sample size is insufficient
                  thinSteps = 1) 
